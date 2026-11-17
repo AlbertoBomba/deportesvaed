@@ -7,6 +7,60 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Escaparate de DeportesVaed
+
+El front adapta [Lunar Livewire Starter Kit](https://github.com/lunarphp/livewire-starter-kit)
+(revision `db4ad00a68c61f57290b5b3a2060c8bd801f867f`) a Laravel 13, Lunar 1.5,
+Livewire 3 y Tailwind 4. Es una adaptacion local, no una dependencia actualizable
+del starter. La atribucion y licencia estan en [LICENSE-LUNAR-STARTER](LICENSE-LUNAR-STARTER).
+
+Incluye portada, colecciones, busqueda por nombre/SKU, ficha con variantes,
+carrito y checkout de invitado con pago offline. El backoffice sigue en `/lunar`.
+Las vistas iniciales mantienen el ingles del starter.
+
+### Desarrollo
+
+Ejecuta estos comandos en el entorno que tenga acceso a tu base de datos
+configurada. La integracion no cambia esa conexion ni necesita migraciones nuevas.
+
+```sh
+composer install
+npm ci
+npm run build
+composer run dev
+```
+
+Configura `APP_NAME` en tu entorno para mostrar el nombre de la tienda.
+Para desarrollo de estilos tambien puedes usar `npm run dev`.
+
+### Catalogo y checkout
+
+- Utiliza los datos existentes: no ejecutes los seeders de la demo ni
+  `migrate:fresh` sobre tu base de datos.
+- Los productos deben estar publicados, tener URL por defecto y estar visibles
+  en el canal y grupo de clientes de la sesion de Lunar. Las colecciones tambien
+  deben tener URL y disponibilidad. Configura precios, moneda, impuestos,
+  variantes, inventario e imagenes desde Lunar.
+- La busqueda usa la base de datos; no requiere Meilisearch ni importar un indice.
+- El checkout usa `cash-in-hand` de `config/lunar/payments.php`: crea un pedido
+  con pago offline pendiente, no cobra tarjetas ni incluye Stripe.
+- Los envios usan exclusivamente las opciones que proporcione `ShippingManifest`
+  de Lunar. No se registra la tarifa ficticia del starter. Si no tienes un
+  proveedor/modificador de envios configurado, se muestra un aviso y no se puede
+  finalizar un pedido fisico. Los productos digitales no requieren envio.
+- La confirmacion solo muestra el ultimo pedido realizado desde esa sesion.
+- El starter original es una demostracion. Antes de publicar, revisa metodos de
+  envio, impuestos, pago, correos transaccionales y textos legales de tu tienda.
+
+### Validacion
+
+```sh
+php artisan test --compact
+npm run build
+```
+
+Las pruebas usan SQLite en memoria y no modifican el catalogo real.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
