@@ -1,32 +1,13 @@
 <div>
-    <div class="flex gap-4">
-        <div>
-            <label for="quantity"
-                   class="sr-only">
-                Quantity
-            </label>
-
-            <input class="w-16 px-1 py-4 text-sm text-center transition border border-gray-100 rounded-lg no-spinner"
-                   type="number"
-                   id="quantity"
-                   min="1"
-                   value="1"
-                   wire:model.live="quantity" />
+    <div class="flex items-end gap-3">
+        <div class="w-24 shrink-0">
+            <label for="quantity-{{ $purchasable->id }}" class="mb-2 block text-xs font-semibold">Cantidad</label>
+            <input class="min-h-13 w-full rounded-full border border-ink/20 bg-white px-3 py-3.5 text-center text-sm" type="number"
+                id="quantity-{{ $purchasable->id }}" min="1" max="10000" step="1" wire:model.live="quantity" />
         </div>
-
-        <button type="submit"
-                class="w-full px-6 py-4 text-sm font-medium text-center text-white bg-indigo-600 rounded-lg hover:bg-indigo-700"
-                wire:click.prevent="addToCart">
-            Add to Cart
+        <button type="button" class="button-primary min-h-13 flex-1" wire:click="addToCart" wire:loading.attr="disabled" wire:target="addToCart">
+            <span wire:loading.remove wire:target="addToCart">Añadir a mi bolsa</span><span wire:loading wire:target="addToCart" role="status">Añadiendo…</span><x-store-icon name="bag" />
         </button>
     </div>
-
-    @if ($errors->has('quantity'))
-        <div class="p-2 mt-4 text-xs font-medium text-center text-red-700 rounded bg-red-50"
-             role="alert">
-            @foreach ($errors->get('quantity') as $error)
-                {{ $error }}
-            @endforeach
-        </div>
-    @endif
+    @error('quantity')<p class="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">{{ $message }}</p>@enderror
 </div>

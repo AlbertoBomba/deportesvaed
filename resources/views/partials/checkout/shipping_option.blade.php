@@ -1,15 +1,15 @@
 <form wire:submit="saveShippingOption"
-      class="bg-white border border-gray-100 rounded-xl">
+      class="checkout-panel">
     <div class="flex items-center justify-between h-16 px-6 border-b border-gray-100">
-        <h3 class="font-medium">
-            Shipping Options
-        </h3>
+        <h2 class="flex items-center gap-3 text-base font-bold">
+            <span class="flex size-8 items-center justify-center rounded-full bg-paper text-xs text-accent">{{ $step }}</span> Método de envío
+        </h2>
 
         @if ($currentStep > $step)
             <button class="px-5 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100 hover:text-gray-700"
                     type="button"
                     wire:click.prevent="$set('currentStep', {{ $step }})">
-                Edit
+                Editar
             </button>
         @endif
     </div>
@@ -20,14 +20,14 @@
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     @forelse ($this->shippingOptions as $option)
                         <div>
-                            <input class="hidden peer"
+                            <input class="peer sr-only"
                                    type="radio"
                                    wire:model.live="chosenShipping"
                                    name="shippingOption"
                                    value="{{ $option->getIdentifier() }}"
                                    id="{{ $option->getIdentifier() }}" />
 
-                            <label class="flex items-center justify-between p-4 text-sm font-medium border border-gray-100 rounded-lg shadow-xs cursor-pointer peer-checked:border-blue-500 hover:bg-gray-50 peer-checked:ring-1 peer-checked:ring-blue-500"
+                            <label class="flex min-h-16 cursor-pointer items-center justify-between gap-3 rounded-xl border border-ink/15 p-4 text-sm font-medium hover:bg-paper peer-checked:border-accent peer-checked:bg-paper peer-checked:ring-1 peer-checked:ring-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-accent"
                                    for="{{ $option->getIdentifier() }}">
                                 <p>
                                     {{ $option->getName() }}
@@ -40,7 +40,7 @@
                         </div>
                     @empty
                         <p class="col-span-full text-sm text-amber-800" role="alert">
-                            No shipping methods are available for this address. Please contact the store.
+                            No hay métodos de envío disponibles para esta dirección. Contacta con la tienda.
                         </p>
                     @endforelse
                 </div>
@@ -64,13 +64,15 @@
 
             @if ($step == $currentStep)
                 <div class="mt-6 text-right">
-                    <button class="px-5 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-500"
+                    <button class="button-primary"
                             type="submit"
+                            wire:loading.attr="disabled"
+                            wire:target="saveShippingOption"
                             @disabled($this->shippingOptions->isEmpty())
                             wire:key="shipping_submit_btn">
                         <span wire:loading.remove.delay
                               wire:target="saveShippingOption">
-                            Choose Shipping
+                            Confirmar envío
                         </span>
                         <span wire:loading.delay
                               wire:target="saveShippingOption">

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="es">
 
 <head>
     <meta charset="utf-8">
@@ -7,10 +7,10 @@
         name="viewport"
         content="width=device-width, initial-scale=1"
     >
-    <title>Checkout - {{ config('app.name') }}</title>
+    <title>Finalizar compra - {{ config('app.name') }}</title>
     <meta
         name="description"
-        content="Example of an ecommerce storefront built with Lunar."
+        content="Revisa tu equipación y completa tu pedido en {{ config('app.name') }}."
     >
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link
@@ -20,22 +20,25 @@
     @livewireStyles
 </head>
 
-<body class="antialiased text-gray-900">
-    <header class="relative border-b border-gray-100">
-        <div class="flex items-center h-16 px-4 mx-auto max-w-screen-2xl sm:px-6 lg:px-8">
+<body class="antialiased">
+    <a class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:p-4" href="#contenido">Saltar al contenido</a>
+    <header class="border-b border-ink/15">
+        <div class="store-container flex min-h-24 flex-wrap items-center justify-between gap-5 py-5">
             <a
                 class="flex items-center shrink-0"
-                href="{{ url('/') }}"
+                href="{{ route('home') }}"
+                wire:navigate
             >
-                <span class="sr-only">Home</span>
+                <span class="sr-only">Inicio</span>
 
-                <x-brand.logo class="w-auto h-6 text-indigo-600" />
+                <x-brand.logo />
             </a>
+            <a class="flex items-center gap-2 text-xs font-semibold text-muted hover:text-accent" href="{{ route('search.view') }}" wire:navigate>Seguir comprando <x-store-icon class="size-4" /></a>
         </div>
     </header>
 
 
-    <main>
+    <main id="contenido" tabindex="-1">
         {{ $slot }}
     </main>
 

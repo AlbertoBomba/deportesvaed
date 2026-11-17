@@ -3,7 +3,8 @@
 ])
 <input {{ $attributes->merge([
         'type' => 'text',
-        'class' => 'w-full p-3 border border-gray-200 rounded-lg sm:text-sm',
+        'class' => 'min-h-12 w-full rounded-lg border border-ink/20 bg-paper/50 p-3 text-sm transition-colors focus:border-accent',
+        'aria-invalid' => $error ? 'true' : 'false',
     ])->class([
         'border-red-400' => !!$error,
     ]) }}

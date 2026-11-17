@@ -1,153 +1,48 @@
-<div class="sm:relative"
-     x-data="{
-         linesVisible: @entangle('linesVisible').live
-     }">
-    <button class="grid w-16 h-16 transition border-l border-gray-100 lg:border-l-transparent hover:opacity-75"
-            x-on:click="linesVisible = !linesVisible">
-        <span class="sr-only">Cart</span>
-
-        <span class="place-self-center">
-            <svg xmlns="http://www.w3.org/2000/svg"
-                 class="w-4 h-4"
-                 fill="none"
-                 viewBox="0 0 24 24"
-                 stroke="currentColor">
-                <path stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-        </span>
+<div class="sm:relative" x-data="{ linesVisible: @entangle('linesVisible').live }" x-on:keydown.escape.window="linesVisible = false">
+    <button type="button" class="relative flex size-11 items-center justify-center rounded-full border border-ink/15 transition-colors hover:bg-ink hover:text-white"
+        x-on:click="linesVisible = !linesVisible" x-bind:aria-expanded="linesVisible" aria-controls="shopping-bag" aria-label="Abrir mi bolsa">
+        <x-store-icon name="bag" />
+        @if (count($lines))<span class="absolute -top-1 -right-1 flex min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[10px] leading-5 font-bold text-white">{{ collect($lines)->sum('quantity') }}</span>@endif
     </button>
-
-    <div class="absolute inset-x-0 top-auto z-50 w-screen max-w-sm px-6 py-8 mx-auto mt-4 bg-white border border-gray-100 shadow-xl sm:left-auto rounded-xl"
-         x-show="linesVisible"
-         x-on:click.away="linesVisible = false"
-         x-transition
-         x-cloak>
-        <button class="absolute text-gray-500 transition-transform top-3 right-3 hover:scale-110"
-                type="button"
-                aria-label="Close"
-                x-on:click="linesVisible = false">
-            <svg xmlns="http://www.w3.org/2000/svg"
-                 class="w-4 h-4"
-                 fill="none"
-                 viewBox="0 0 24 24"
-                 stroke="currentColor">
-                <path stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
-
-        <div>
-            @error('cart')
-                <p class="mb-4 text-sm text-red-700" role="alert">{{ $message }}</p>
-            @enderror
-            @if ($this->cart)
-                @if ($lines)
-                    <div class="flow-root">
-                        <ul class="-my-4 overflow-y-auto divide-y divide-gray-100 max-h-96">
-                            @foreach ($lines as $index => $line)
-                                <li>
-                                    <div class="flex py-4"
-                                         wire:key="line_{{ $line['id'] }}">
-                                        @if($line['thumbnail'])
-                                        <img class="object-cover w-16 h-16 rounded"
-                                             src="{{ $line['thumbnail'] }}">
-                                        @endif
-
-                                        <div class="flex-1 ml-4">
-                                            <p class="max-w-[20ch] text-sm font-medium">
-                                                {{ $line['description'] }}
-                                            </p>
-
-                                            <span class="block mt-1 text-xs text-gray-500">
-                                                {{ $line['identifier'] }} / {{ $line['options'] }}
-                                            </span>
-
-                                            <div class="flex items-center mt-2">
-                                                <input class="w-16 p-2 text-xs transition-colors border border-gray-100 rounded-lg hover:border-gray-200"
-                                                       type="number"
-                                                       wire:model.live="lines.{{ $index }}.quantity" />
-
-                                                <p class="ml-2 text-xs">
-                                                    @ {{ $line['unit_price'] }}
-                                                </p>
-
-                                                <button class="p-2 ml-auto text-gray-600 transition-colors rounded-lg hover:bg-gray-100 hover:text-gray-700"
-                                                        type="button"
-                                                        wire:click="removeLine('{{ $line['id'] }}')">
-                                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                                         class="w-4 h-4"
-                                                         fill="none"
-                                                         viewBox="0 0 24 24"
-                                                         stroke="currentColor">
-                                                        <path stroke-linecap="round"
-                                                              stroke-linejoin="round"
-                                                              stroke-width="2"
-                                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    @if ($errors->get('lines.' . $index . '.quantity'))
-                                        <div class="p-2 mb-4 text-xs font-medium text-center text-red-700 rounded bg-red-50"
-                                             role="alert">
-                                            @foreach ($errors->get('lines.' . $index . '.quantity') as $error)
-                                                {{ $error }}
-                                            @endforeach
-                                        </div>
-                                    @endif
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @else
-                    <p class="py-4 text-sm font-medium text-center text-gray-500">
-                        Your cart is empty
-                    </p>
-                @endif
-
-                <dl class="flex flex-wrap pt-4 mt-6 text-sm border-t border-gray-100">
-                    <dt class="w-1/2 font-medium">
-                        Sub Total
-                    </dt>
-
-                    <dd class="w-1/2 text-right">
-                        {{ $this->cart->subTotal->formatted() }}
-                    </dd>
-                </dl>
-            @else
-                <p class="py-4 text-sm font-medium text-center text-gray-500">
-                    Your cart is empty
-                </p>
-            @endif
+    <section id="shopping-bag" class="absolute top-full right-3 left-3 z-50 mt-3 max-h-[75dvh] overflow-y-auto rounded-2xl border border-ink/10 bg-paper p-6 shadow-2xl sm:top-auto sm:right-0 sm:left-auto sm:w-[390px]"
+        x-show="linesVisible" x-on:click.outside="linesVisible = false" x-transition x-cloak aria-label="Mi bolsa">
+        <div class="mb-6 flex items-center justify-between border-b border-ink/15 pb-5">
+            <h2 class="text-xl font-extrabold tracking-tight">Tu bolsa<span class="text-accent">.</span></h2>
+            <button type="button" class="flex size-9 items-center justify-center rounded-full hover:bg-ink/5" aria-label="Cerrar bolsa" x-on:click="linesVisible = false"><x-store-icon name="close" /></button>
         </div>
-
-        @if ($this->cart)
-            <div class="mt-4 space-y-4 text-center">
-                <button class="block w-full p-3 text-sm font-medium text-blue-800 border border-blue-600 rounded-lg hover:ring-1 hover:ring-blue-600"
-                        type="button"
-                        wire:click="updateLines">
-                    Update Cart
-                </button>
-
-                <a class="block w-full p-3 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-500"
-                   href="{{ route('checkout.view') }}"
-                   wire:navigate
-                >
-                    Checkout
-                </a>
-
-                <a class="inline-block text-sm font-medium text-gray-600 underline hover:text-gray-500"
-                   href="{{ url('/') }}">
-                    Continue Shopping
-                </a>
+        @error('cart')<p class="mb-4 text-sm text-red-700" role="alert">{{ $message }}</p>@enderror
+        @if ($this->cart && count($lines))
+            <ul class="divide-y divide-ink/10">
+                @foreach ($lines as $index => $line)
+                    <li class="py-4 first:pt-0" wire:key="line_{{ $line['id'] }}">
+                        <div class="flex gap-4">
+                            <div class="flex h-24 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white">
+                                @if ($line['thumbnail'])<img class="h-full w-full object-contain p-1" src="{{ $line['thumbnail'] }}" alt="{{ $line['description'] }}" />@else<x-store-icon name="bag" class="size-7 text-muted" />@endif
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-bold">{{ $line['description'] }}</p>
+                                <p class="mt-1 text-xs text-muted">{{ $line['options'] }}</p>
+                                <div class="mt-3 flex items-center gap-2">
+                                    <label for="cart-quantity-{{ $line['id'] }}" class="sr-only">Cantidad de {{ $line['description'] }}</label>
+                                    <input id="cart-quantity-{{ $line['id'] }}" class="w-16 rounded-lg border border-ink/15 bg-white p-2 text-xs" type="number" min="1" max="10000" step="1" wire:model.live="lines.{{ $index }}.quantity" />
+                                    <span class="text-xs font-semibold">{{ $line['unit_price'] }}</span>
+                                    <button class="ml-auto flex size-9 items-center justify-center text-muted hover:text-accent" type="button" wire:click="removeLine('{{ $line['id'] }}')" aria-label="Eliminar {{ $line['description'] }}"><x-store-icon name="trash" class="size-4" /></button>
+                                </div>
+                            </div>
+                        </div>
+                        @foreach ($errors->get('lines.'.$index.'.quantity') as $error)<p class="mt-3 text-xs text-red-700" role="alert">{{ $error }}</p>@endforeach
+                    </li>
+                @endforeach
+            </ul>
+            <dl class="mt-4 flex justify-between border-t border-ink/15 pt-5 text-sm font-bold"><dt>Subtotal</dt><dd>{{ $this->cart->subTotal->formatted() }}</dd></dl>
+            <p class="mt-2 text-xs leading-5 text-muted">Envío e impuestos calculados al finalizar la compra.</p>
+            <div class="mt-5 grid gap-3">
+                <button class="button-secondary w-full" type="button" wire:click="updateLines" wire:loading.attr="disabled" wire:target="updateLines">Actualizar bolsa</button>
+                <a class="button-primary w-full" href="{{ route('checkout.view') }}" wire:navigate>Finalizar compra <x-store-icon /></a>
             </div>
+        @else
+            <div class="flex flex-col items-center gap-4 py-8 text-center"><x-store-icon name="bag" class="size-12 text-muted" /><p class="font-bold">Tu bolsa espera su primer fichaje.</p><p class="text-sm text-muted">Encuentra algo que te mueva.</p></div>
         @endif
-    </div>
+        <a class="mt-5 block text-center text-xs font-semibold underline underline-offset-4 hover:text-accent" href="{{ route('search.view') }}" wire:navigate>Seguir comprando</a>
+    </section>
 </div>

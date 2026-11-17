@@ -1,72 +1,35 @@
-<header class="relative border-b border-gray-100">
-    <div class="flex items-center justify-between h-16 px-4 mx-auto max-w-screen-2xl sm:px-6 lg:px-8">
-        <div class="flex items-center">
-            <a class="flex items-center shrink-0"
-               href="{{ url('/') }}"
-               wire:navigate
-            >
-                <span class="sr-only">Home</span>
-
-                <x-brand.logo class="w-auto h-6 text-indigo-600" />
-            </a>
-
-            <nav class="hidden lg:gap-4 lg:flex lg:ml-8">
+<header class="relative z-40 border-b border-ink/10 bg-paper" x-data="{ mobileMenu: false }" x-on:keydown.escape.window="mobileMenu = false">
+    <div class="bg-ink px-5 py-2.5 text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-white sm:text-[11px]">
+        Tu ritmo. Tu deporte. Tu próxima versión.
+    </div>
+    <div class="store-container flex min-h-22 flex-wrap items-center justify-between gap-5 py-5">
+        <a class="shrink-0" href="{{ route('home') }}" wire:navigate aria-label="{{ config('app.name') }} — Inicio">
+            <x-brand.logo />
+        </a>
+        <nav class="hidden items-center gap-7 xl:flex" aria-label="Navegación principal">
+            <a href="{{ route('search.view') }}" wire:navigate class="text-sm font-bold hover:text-accent">La colección</a>
+            @foreach ($this->collections->take(4) as $collection)
+                <a class="text-sm text-muted transition-colors hover:text-accent" href="{{ route('collection.view', $collection->defaultUrl->slug) }}" wire:navigate>
+                    {{ $collection->translateAttribute('name') }}
+                </a>
+            @endforeach
+        </nav>
+        <div class="flex items-center gap-3">
+            <x-header.search class="hidden max-w-64 md:block" />
+            @livewire('components.cart')
+            <button type="button" class="flex size-11 items-center justify-center rounded-full border border-ink/15 xl:hidden"
+                x-on:click="mobileMenu = !mobileMenu" x-bind:aria-expanded="mobileMenu" aria-controls="mobile-menu" aria-label="Abrir navegación">
+                <x-store-icon name="menu" />
+            </button>
+        </div>
+        <div id="mobile-menu" x-cloak x-show="mobileMenu" x-transition class="w-full border-t border-ink/10 pt-5 xl:hidden">
+            <div class="md:hidden"><x-header.search id="mobile-search" /></div>
+            <nav class="mt-4 flex flex-col divide-y divide-ink/10" aria-label="Navegación móvil">
+                <a class="py-3 font-bold" href="{{ route('search.view') }}" wire:navigate>Ver todos los productos <span aria-hidden="true">↗</span></a>
                 @foreach ($this->collections as $collection)
-                    <a class="text-sm font-medium transition hover:opacity-75"
-                       href="{{ route('collection.view', $collection->defaultUrl->slug) }}"
-                       wire:navigate
-                    >
-                        {{ $collection->translateAttribute('name') }}
-                    </a>
+                    <a class="py-3 text-sm" href="{{ route('collection.view', $collection->defaultUrl->slug) }}" wire:navigate>{{ $collection->translateAttribute('name') }}</a>
                 @endforeach
             </nav>
-        </div>
-
-        <div class="flex items-center justify-between flex-1 ml-4 lg:justify-end">
-            <x-header.search class="max-w-sm mr-4" />
-
-            <div class="flex items-center -mr-4 sm:-mr-6 lg:mr-0">
-                @livewire('components.cart')
-
-                <div x-data="{ mobileMenu: false }">
-                    <button x-on:click="mobileMenu = !mobileMenu"
-                            class="grid shrink-0 w-16 h-16 border-l border-gray-100 lg:hidden">
-                        <span class="sr-only">Toggle Menu</span>
-
-                        <span class="place-self-center">
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                 class="w-5 h-5"
-                                 fill="none"
-                                 viewBox="0 0 24 24"
-                                 stroke="currentColor">
-                                <path stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      stroke-width="2"
-                                      d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </span>
-                    </button>
-
-                    <div x-cloak
-                         x-transition
-                         x-show="mobileMenu"
-                         class="absolute right-0 top-auto z-50 w-screen p-4 sm:max-w-xs">
-                        <ul x-on:click.away="mobileMenu = false"
-                            class="p-6 space-y-4 bg-white border border-gray-100 shadow-xl rounded-xl">
-                            @foreach ($this->collections as $collection)
-                                <li>
-                                    <a class="text-sm font-medium"
-                                       href="{{ route('collection.view', $collection->defaultUrl->slug) }}"
-                                       wire:navigate
-                                    >
-                                        {{ $collection->translateAttribute('name') }}
-                                    </a>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </header>

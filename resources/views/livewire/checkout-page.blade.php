@@ -1,5 +1,10 @@
 <div>
-    <div class="max-w-7xl px-4 py-12 mx-auto sm:px-6 lg:px-8">
+    <div class="store-container py-10 sm:py-14">
+        <div class="mb-9">
+            <p class="eyebrow text-accent">Un paso más hacia tu próxima meta</p>
+            <h1 class="display-title mt-4 text-4xl sm:text-6xl">Ya casi es tuyo.</h1>
+            <p class="mt-4 text-sm text-muted">Completa tus datos y revisa tu pedido antes de confirmarlo.</p>
+        </div>
         @if ($errors->any())
             <ul class="mb-6 p-4 text-sm text-red-700 rounded-lg bg-red-50" role="alert">
                 @foreach ($errors->all() as $error)
@@ -9,10 +14,10 @@
         @endif
         @if ($cart && $cart->lines->isNotEmpty())
         <div class="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:items-start">
-            <div class="px-6 py-8 space-y-4 bg-white border border-gray-100 lg:sticky lg:top-8 rounded-xl lg:order-last">
-                <h3 class="font-medium">
-                    Order Summary
-                </h3>
+            <div class="checkout-panel space-y-5 px-6 py-7 lg:sticky lg:top-8 lg:order-last">
+                <h2 class="text-xl font-extrabold tracking-tight">
+                    Tu equipación
+                </h2>
 
                 <div class="flow-root">
                     <div class="-my-4 divide-y divide-gray-100">
@@ -43,7 +48,7 @@
                     <dl class="-my-4 text-sm divide-y divide-gray-100">
                         <div class="flex flex-wrap py-4">
                             <dt class="w-1/2 font-medium">
-                                Sub Total
+                                Subtotal
                             </dt>
 
                             <dd class="w-1/2 text-right">
@@ -80,7 +85,7 @@
                                 Total
                             </dt>
 
-                            <dd class="w-1/2 text-right">
+                            <dd class="w-1/2 text-right text-lg font-bold">
                                 {{ $cart->total->formatted() }}
                             </dd>
                         </div>
@@ -111,7 +116,7 @@
             </div>
         </div>
         @else
-            <p>Your cart is empty. <a href="{{ route('home') }}" class="underline">Continue shopping</a></p>
+            <div class="empty-state"><x-store-icon name="bag" class="size-12" /><h2 class="text-xl font-bold text-ink">Tu bolsa está vacía.</h2><a href="{{ route('search.view') }}" class="button-primary" wire:navigate>Encuentra tu equipación <x-store-icon /></a></div>
         @endif
     </div>
 </div>

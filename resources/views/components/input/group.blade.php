@@ -4,12 +4,12 @@
     'required' => false,
 ])
 
-<label {{ $attributes->merge(['class' => 'space-y-1']) }}>
-    <div class="font-medium font-sm">
+<label {{ $attributes->merge(['class' => 'block space-y-2']) }}>
+    <span class="block text-xs font-semibold">
         {{ $label }} @if ($required)
             <small class="text-xs text-red-500">&#42;</small>
         @endif
-    </div>
+    </span>
 
     {{ $slot }}
     @foreach ($errors as $error)

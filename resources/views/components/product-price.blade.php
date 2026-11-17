@@ -1,3 +1,3 @@
 <span {{ $attributes }}>
-    {{ $price?->price->formatted() ?? 'Price unavailable' }}
+    {{ $price?->price->formatted() ?? 'Precio no disponible' }}
 </span>

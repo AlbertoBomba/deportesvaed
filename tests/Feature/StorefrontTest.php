@@ -7,6 +7,9 @@ use App\Livewire\Components\AddToCart;
 use App\Livewire\Components\Cart as CartComponent;
 use App\Livewire\ProductPage;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Lunar\DataTypes\Price as PriceValue;
 use Lunar\DataTypes\ShippingOption;
@@ -30,6 +33,7 @@ use Lunar\Models\ProductVariant;
 use Lunar\Models\TaxClass;
 use Lunar\Models\TaxZone;
 use PHPUnit\Framework\Attributes\TestWith;
+use Spatie\MediaLibrary\Conversions\Jobs\PerformConversionsJob;
 use Tests\TestCase;
 
 class StorefrontTest extends TestCase
@@ -75,7 +79,7 @@ class StorefrontTest extends TestCase
             ->assertDontSee('Draft running shoes');
         $this->get('/search?term=SPORT-123')->assertOk()->assertSee('Running shoes');
         $this->get('/search?term=Zapatillas')->assertOk()->assertSee('Running shoes');
-        $this->get('/search?term=missing')->assertOk()->assertSee('No products found.');
+        $this->get('/search?term=missing')->assertOk()->assertSee('No hemos encontrado productos.');
     }
 
     public function test_collection_lists_only_available_products_and_hides_unavailable_collections(): void
@@ -100,7 +104,7 @@ class StorefrontTest extends TestCase
 
         $this->get('/products/missing')->assertNotFound();
         $this->get('/collections/missing')->assertNotFound();
-        $this->get('/search')->assertOk()->assertSee('No products found.');
+        $this->get('/search')->assertOk()->assertSee('No hemos encontrado productos.');
     }
 
     public function test_incomplete_products_and_missing_option_combinations_do_not_crash(): void
@@ -108,7 +112,7 @@ class StorefrontTest extends TestCase
         $this->prepareStorefront();
         $product = Product::factory()->create(['attribute_data' => ['name' => new Text('Coming soon')]]);
         $this->get(route('product.view', $product->defaultUrl->slug))
-            ->assertOk()->assertSee('This combination is not available.');
+            ->assertOk()->assertSee('Esta combinación no está disponible.');
 
         $variant = $this->variant('Option shoes');
         $option = ProductOption::factory()->create();
@@ -117,7 +121,44 @@ class StorefrontTest extends TestCase
 
         Livewire::test(ProductPage::class, ['slug' => $variant->product->defaultUrl->slug])
             ->set('selectedOptionValues', [$option->id => 99999])
-            ->assertSee('This combination is not available.');
+            ->assertSee('Esta combinación no está disponible.');
+    }
+
+    #[TestWith([[], '', '', ''])]
+    #[TestWith([['medium' => true], 'medium', 'medium', ''])]
+    #[TestWith([['large' => true, 'medium' => true, 'small' => true], 'large', 'medium', 'small'])]
+    public function test_product_images_use_available_conversions_or_the_original(
+        array $generatedConversions,
+        string $mainConversion,
+        string $cardConversion,
+        string $thumbnailConversion,
+    ): void {
+        $this->prepareStorefront();
+        Storage::fake('public');
+        Queue::fake([PerformConversionsJob::class]);
+        config([
+            'media-library.queue_conversions_by_default' => true,
+            'media-library.queue_conversions_after_database_commit' => false,
+        ]);
+        $product = $this->variant()->product;
+        $image = $product->addMedia(UploadedFile::fake()->image('running-shoes.png'))
+            ->withCustomProperties(['primary' => true])
+            ->toMediaCollection('images', 'public');
+        $image->update(['generated_conversions' => $generatedConversions]);
+
+        $this->get(route('product.view', $product->defaultUrl->slug))
+            ->assertOk()
+            ->assertSeeInOrder([
+                'src="'.$image->getUrl($mainConversion).'"',
+                'aria-label="Imágenes del producto"',
+                'src="'.$image->getUrl($thumbnailConversion).'"',
+            ], false);
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('src="'.$image->getUrl($cardConversion).'"', false);
+
+        Storage::disk('public')->assertExists($image->getPathRelativeToRoot());
+        Queue::assertPushed(PerformConversionsJob::class);
     }
 
     public function test_adding_a_product_uses_lunar_inventory_rules_and_session_cart(): void
@@ -167,7 +208,7 @@ class StorefrontTest extends TestCase
         $variant->prices()->delete();
 
         $this->get(route('product.view', $variant->product->defaultUrl->slug))
-            ->assertOk()->assertSee('Price unavailable');
+            ->assertOk()->assertSee('Precio no disponible');
         Livewire::test(AddToCart::class, ['purchasable' => $variant->fresh()])
             ->call('addToCart')->assertHasErrors('quantity')
             ->assertSee('Price unavailable. Please contact the store.');
@@ -194,10 +235,13 @@ class StorefrontTest extends TestCase
         $line = $cart->lines->first();
 
         $component = Livewire::test(CartComponent::class)
-            ->set('lines.0.quantity', 3)->call('updateLines')->assertHasNoErrors();
+            ->set('lines.0.quantity', 3)->call('updateLines')->assertHasNoErrors()
+            ->assertSee('Finalizar compra');
         $this->assertDatabaseHas('lunar_cart_lines', ['id' => $line->id, 'quantity' => 3]);
 
-        $component->call('removeLine', $line->id);
+        $component->call('removeLine', $line->id)
+            ->assertSee('Tu bolsa espera su primer fichaje.')
+            ->assertDontSee('Finalizar compra');
         $this->assertDatabaseMissing('lunar_cart_lines', ['id' => $line->id]);
     }
 
@@ -251,7 +295,7 @@ class StorefrontTest extends TestCase
 
         Livewire::test(CheckoutPage::class)
             ->set('shipping', $this->address())->call('saveAddress', 'shipping')
-            ->assertSee('No shipping methods are available')
+            ->assertSee('No hay métodos de envío disponibles')
             ->set('chosenShipping', 'forged')->call('saveShippingOption')
             ->assertHasErrors('chosenShipping')
             ->call('checkout')->assertHasErrors('checkout');
@@ -296,7 +340,9 @@ class StorefrontTest extends TestCase
         $this->assertDatabaseHas('lunar_order_lines', [
             'order_id' => $order->id, 'identifier' => $variant->sku, 'quantity' => 1,
         ]);
-        $this->get('/checkout/success')->assertOk()->assertSee($order->reference);
+        $this->get('/checkout/success')->assertOk()->assertSee($order->reference)
+            ->assertSee('Pago pendiente')
+            ->assertSee('No se ha realizado ningún cargo online.');
         $this->get('/checkout/success')->assertOk()->assertSee($order->reference);
         $this->get('/checkout')->assertRedirect(route('home'));
         $this->assertDatabaseCount('lunar_orders', 1);

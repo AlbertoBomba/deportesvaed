@@ -7,6 +7,68 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-paper: #f7f7f2;
+    --color-ink: #20231f;
+    --color-accent: #d9431f;
+    --color-muted: #62665e;
+}
+
+@layer base {
+    body {
+        @apply bg-paper text-ink;
+    }
+
+    button, a, input, select {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    button:not(:disabled), summary {
+        cursor: pointer;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 4px;
+    }
+
+    input, select {
+        accent-color: var(--color-accent);
+    }
+
+    ::selection {
+        background: #f9c2a8;
+        color: var(--color-ink);
+    }
+}
+
+@layer components {
+    .store-container {
+        @apply mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-14;
+    }
+
+    .eyebrow {
+        @apply text-[11px] font-bold uppercase tracking-[0.2em];
+    }
+
+    .display-title {
+        @apply font-black uppercase leading-[0.95] tracking-[-0.06em];
+    }
+
+    .button-primary {
+        @apply inline-flex min-h-12 items-center justify-center gap-4 rounded-full bg-accent px-7 py-3.5 text-sm font-bold text-white transition-colors hover:bg-ink disabled:cursor-wait disabled:opacity-50;
+    }
+
+    .button-secondary {
+        @apply inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-ink/20 px-6 py-3 text-sm font-semibold transition-colors hover:bg-ink hover:text-white disabled:opacity-50;
+    }
+
+    .checkout-panel {
+        @apply overflow-hidden rounded-2xl border border-ink/10 bg-white;
+    }
+
+    .empty-state {
+        @apply col-span-full flex flex-col items-center gap-5 rounded-2xl border border-dashed border-ink/20 px-6 py-16 text-center text-muted;
+    }
 }
 
 [x-cloak] {
