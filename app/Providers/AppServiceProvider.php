@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+// 1. AÑADE ESTA LÍNEA:
+use Lunar\Admin\Support\Facades\LunarPanel;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -11,7 +13,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // 2. AÑADE ESTA LÍNEA:
+        LunarPanel::register();
     }
 
     /**
